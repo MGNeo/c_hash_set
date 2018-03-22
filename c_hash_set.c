@@ -115,7 +115,7 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
 // В случае наличия точно таких же данных в хэш-множестве возвращает 0.
 // В случае ошибки возвращает < 0.
 ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
-                        const void *const _data)
+                            const void *const _data)
 {
     if (_hash_set == NULL) return -1;
     if (_data == NULL) return -2;
@@ -193,6 +193,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
                         *((void**)relocate_node) = new_slots[s].head;
                         new_slots[s].head = relocate_node;
                         ++new_slots[s].count;
+                        --count;
                     }
                 }
             }
@@ -221,7 +222,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
             // Данные просматриваемого узла.
             const void *const data_n = ((size_t*)((void**)select_node + 1)) + 1;
             // Сравним детально.
-            if (_hash_set->comp_func(_data, data_n) > 0)
+            if (_hash_set->comp_func(_data, data_n) > 0)// Типы _data и data_n не идентичны!
             {
                 return 0;
             }
