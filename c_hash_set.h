@@ -40,16 +40,24 @@ typedef struct s_c_hash_set
     c_slot *slots;
 } c_hash_set;
 
-c_hash_set *c_hash_set_create(size_t (*_hash_func)(const void *const _data),
-                              size_t (*_comp_func)(const void *const _a,
+c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data),
+                              size_t (*const _comp_func)(const void *const _a,
                                                    const void *const _b),
                               const size_t _data_size,
                               const size_t _slots_count,
                               const float _max_load_factor);
 
 ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
-                            void (*_del_func)(void *const _data));
+                            void (*const _del_func)(void *const _data));
 
 ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
                             const void *const _data);
+
+ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
+                           const void *const _data,
+                           void (*const _del_func)(void *const _data));
+
+ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
+                            const size_t _slots_count);
+
 #endif

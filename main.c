@@ -115,9 +115,25 @@ int main(int argc, char **argv)
     // Отобразим, сколько элементов содержится в хэш-множестве.
     printf("nodes_count: %Iu\n", hash_set->nodes_count);
 
+    // Отобразим параметры хэш-множества.
+    printf("slots: %Iu\nslots_count: %Iu\nnodes_count: %Iu\n",
+           (size_t)hash_set->slots,
+           hash_set->slots_count,
+           hash_set->nodes_count);
+
+    // Изменим кол-во слотов хэш-множества.
+    c_hash_set_resize(hash_set, 1000);
+
+    // Отобразим параметры хэш-множества.
+    printf("slots: %Iu\nslots_count: %Iu\nnodes_count: %Iu\n",
+           (size_t)hash_set->slots,
+           hash_set->slots_count,
+           hash_set->nodes_count);
+
     // Удаление хэш-множества.
     c_hash_set_delete(hash_set, NULL);
 
     getchar();
     return 0;
 }
+
