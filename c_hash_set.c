@@ -414,3 +414,48 @@ ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
         return 2;
     }
 }
+
+// Проверка, имеется ли заданный элемент в хэш-множестве.
+// Если имеется, функция возвращает > 0.
+// Если не имеется, функция возвращает 0.
+// В случае ошибки возвращает < 0.
+ptrdiff_t c_hash_set_find(const c_hash_set *const _hash_set,
+                          const void *const _data)
+{
+    if (_hash_set == NULL) return -1;
+    if (_data == NULL) return -2;
+
+    if (_hash_set->nodes_count == 0) return 0;
+
+    // Определим неприведенный хэш искомых данных.
+    const size_t hash = _hash_set->hash_func(_data);
+
+    // Определим приведенный хэш искомых данных.
+    const size_t presented_hash = hash % _hash_set->slots_count;
+
+    if (_hash_set->slots[presented_hash].head == NULL)
+    {
+        return 0;
+    }
+
+    void *select_node = _hash_set->slots[presented_hash].head;
+    while(select_node != NULL)
+    {
+        // Неприведенный хэш данных узла.
+        const size_t hash_n = *((size_t*)((void**)select_node + 1));
+
+        // Если неприведенные хэши совпали, осуществляем детальное сравнение данных узла.
+        if (hash == hash_n)
+        {
+            // Данные узла.
+            const void *const data_n = ((size_t*)((void**)select_node + 1)) + 1;
+            if (_hash_set->comp_func(_data, data_n) > 0)
+            {
+                return 1;
+            }
+        }
+        select_node = *((void**)select_node);
+    }
+
+    return 0;
+}

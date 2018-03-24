@@ -60,4 +60,7 @@ ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
 ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
                             const size_t _slots_count);
 
+ptrdiff_t c_hash_set_find(const c_hash_set *const _hash_set,
+                          const void *const _data);
+
 #endif
