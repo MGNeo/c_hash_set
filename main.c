@@ -148,7 +148,7 @@ int main(int argc, uint8_t **argv)
     printf("not_haved: %Iu\n", not_haved);
     // Удаляем хэш-множество.
 
-    c_hash_set_delete(hash_set, del_func_s);// Тут что-то поломалось...
+    c_hash_set_delete(hash_set, del_func_s);
 
     getchar();
     return 0;
