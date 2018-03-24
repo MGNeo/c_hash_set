@@ -6,8 +6,16 @@
 // Хэш-функция для нультерминированной строки однобайтовых символов.
 size_t hash_func_s(const void *const _data)
 {
-    const uint8_t *c = *((uint8_t**)_data);
-    const size_t hash = *((size_t*)c);
+    const char *c = *((char**)_data);
+    size_t hash = 0,
+           i = 0;
+    while(*c != 0)
+    {
+        ((char*)&hash)[i % sizeof(size_t)] ^= *c;
+        ++c;
+        ++i;
+    }
+
     return hash;
 }
 
@@ -21,8 +29,8 @@ size_t comp_func_s(const void *const _a,
         return 0;
     }
 
-    const uint8_t *const string_a = *((uint8_t**)_a);// Это надо понять... )
-    const uint8_t *const string_b = *((uint8_t**)_b);
+    const char *const string_a = *((char**)_a);// Это надо понять... )
+    const char *const string_b = *((char**)_b);
 
     if (strcmp(string_a, string_b) == 0)
     {
@@ -35,11 +43,11 @@ size_t comp_func_s(const void *const _a,
 // Функция удаления строки.
 void del_func_s(void *const _data)
 {
-    uint8_t *const data = *((uint8_t**)_data);
+    char *const data = *((char**)_data);
     free(data);
 }
 
-int main(int argc, uint8_t **argv)
+int main(int argc, char **argv)
 {
     // Количество поисков.
     const size_t find_count = 1E6;
@@ -54,7 +62,7 @@ int main(int argc, uint8_t **argv)
     const size_t string_max_length = 256;
 
     // Число слотов хэш-множества.
-    const size_t slots_count = strings_count * 2;
+    const size_t slots_count = strings_count * 20;
 
     // Фактор загрузки.
     const float max_load_factor = 0.9f;
@@ -62,7 +70,7 @@ int main(int argc, uint8_t **argv)
     // Создание хэш-множества, предназначенного для хранения указателей на нультерминированные однобайтовые строки.
     c_hash_set *hash_set = c_hash_set_create(hash_func_s,
                                              comp_func_s,
-                                             sizeof(uint8_t*),
+                                             sizeof(char*),
                                              slots_count,
                                              max_load_factor);
     if (hash_set == NULL)
@@ -79,7 +87,7 @@ int main(int argc, uint8_t **argv)
     {
         // Создаем строку.
         const size_t string_length = 1 + string_min_length + rand() % (string_max_length - string_min_length + 1);
-        uint8_t *const string = (uint8_t*)malloc(string_length);
+        char *const string = (char*)malloc(string_length);
         if (string == NULL)
         {
             printf("malloc() error! Program end.\n");
@@ -113,7 +121,7 @@ int main(int argc, uint8_t **argv)
     printf("Max length of string of the nodes: %Iu\n\n", max);
 
     // Строка, которую будем искать.
-    uint8_t *find_string = (uint8_t*)malloc(string_max_length + 1);
+    char *find_string = (char*)malloc(string_max_length + 1);
 
     // Формиурем случайную строку и пытаемся найти, есть ли она в хэш-множестве.
     // Делаем это много-много раз.
@@ -154,3 +162,4 @@ int main(int argc, uint8_t **argv)
     return 0;
 }
 
+// Решить проблему с char = [0...255], если char -> signed char
