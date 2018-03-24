@@ -45,7 +45,7 @@ int main(int argc, uint8_t **argv)
     const size_t find_count = 1E6;
 
     // Количество вставляемых строк.
-    const size_t strings_count = 1E4;
+    const size_t strings_count = 1E6;
 
     // Минимальная длина строки (без учета нультерминатора).
     const size_t string_min_length = 32;
@@ -110,7 +110,7 @@ int main(int argc, uint8_t **argv)
             max = hash_set->slots[s].count;
         }
     }
-    printf("Max length of string of the nodes: %Iu\n", max);
+    printf("Max length of string of the nodes: %Iu\n\n", max);
 
     // Строка, которую будем искать.
     uint8_t *find_string = (uint8_t*)malloc(string_max_length + 1);
