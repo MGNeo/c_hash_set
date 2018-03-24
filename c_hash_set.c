@@ -222,7 +222,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
             // Данные просматриваемого узла.
             const void *const data_n = ((size_t*)((void**)select_node + 1)) + 1;
             // Сравним детально.
-            if (_hash_set->comp_func(_data, data_n) > 0)// Типы _data и data_n не идентичны!
+            if (_hash_set->comp_func(_data, data_n) > 0)
             {
                 return 0;
             }
