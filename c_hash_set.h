@@ -56,4 +56,10 @@ ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
 ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
                             const size_t _slots_count);
 
+ptrdiff_t c_hash_set_check(const c_hash_set *const _hash_set,
+                           const void *const _data);
+
+ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
+                              void (*const _func)(const void *const _data));
+
 #endif

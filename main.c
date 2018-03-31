@@ -16,20 +16,6 @@ size_t hash_func_s(const void *const _data)
     return hash;
 }
 
-// Хэш-функция для числа типа double.
-size_t hash_func_d(const void *const _data)
-{
-    size_t hash = 0;
-
-    const uint8_t *b = _data;
-
-    for (size_t i = 0; i < sizeof(double); ++i)
-    {
-        hash += *b;
-        ++b;
-    }
-}
-
 // Функция сравнения нультерминированных строк однобайтовых символов.
 size_t comp_func_s(const void *const _a,
                    const void *const _b)
@@ -40,8 +26,8 @@ size_t comp_func_s(const void *const _a,
         return 0;
     }
 
-    const char *const string_a = _a;
-    const char *const string_b = _b;
+    const char *const string_a = *((char**)_a);
+    const char *const string_b = *((char**)_b);
 
     if (strcmp(string_a, string_b) == 0)
     {
@@ -51,86 +37,58 @@ size_t comp_func_s(const void *const _a,
     return 0;
 }
 
-// Функция сравнения чисел типа double.
-size_t comp_func_d(const void *const _a,
-                   const void *const _b)
+void print_func_s(const void *const _data)
 {
-    if ( (_a == NULL) ||
-         (_b == NULL) )
-    {
-        return 0;
-    }
+    if (_data == NULL) return;
 
-    const double a = *((double*)_a);
-    const double b = *((double*)_b);
+    const char *const string = *((char**)_data);
 
-    if (a == b)
-    {
-        return 1;
-    }
-
-    return 0;
+    printf("%s\n", string);
 }
 
 int main(int argc, char **argv)
 {
-    // Создание хэш-множества, предназначенного для хранения указателей на нультерминированные однобайтовые строки.
     c_hash_set *hash_set = c_hash_set_create(hash_func_s,
                                              comp_func_s,
                                              sizeof(char*),
-                                             0,
+                                             4,
                                              0.5f);
 
-    const char *const hello_string = "hello";
-    const char *const world_string = "world";
+    const char *const string_1 = "Apple";
+    const char *const string_2 = "War";
+    const char *const string_3 = "Blue";
+    const char *const string_4 = "Computer";
 
-    // Вставляем в хэш-множество несколько элементов.
-    c_hash_set_insert(hash_set, &hello_string);
-    c_hash_set_insert(hash_set, &world_string);
-    c_hash_set_insert(hash_set, &hello_string);
+    printf("insert string_1\n");
+    c_hash_set_insert(hash_set, &string_1);
+    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
-    // Отобразим, сколько элементов содержится в хэш-множестве.
-    printf("nodes_count: %Iu\n", hash_set->nodes_count);
+    printf("insert string_2\n");
+    c_hash_set_insert(hash_set, &string_2);
+    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
-    // Удаление хэш-множества.
-    c_hash_set_delete(hash_set, NULL);
+    printf("insert string_3\n");
+    c_hash_set_insert(hash_set, &string_3);
+    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
-    // Создание хэш-множества, предназначенного для хранения элементов типа double.
-    hash_set = c_hash_set_create(hash_func_d,
-                                 comp_func_d,
-                                 sizeof(double),
-                                 0,
-                                 0.5f);
+    printf("insert string_4\n");
+    c_hash_set_insert(hash_set, &string_4);
+    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
-    const double a_double = 3.1415;
-    const double b_double = 7.1157;
-    const double c_double = 99.1;
+    printf("insert string_1\n");
+    c_hash_set_insert(hash_set, &string_1);
+    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
-    // Вставляем в хэш-множество несколько элементов.
-    c_hash_set_insert(hash_set, &a_double);
-    c_hash_set_insert(hash_set, &b_double);
-    c_hash_set_insert(hash_set, &a_double);
-    c_hash_set_insert(hash_set, &c_double);
+    printf("insert string_2\n");
+    c_hash_set_insert(hash_set, &string_2);
+    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
-    // Отобразим, сколько элементов содержится в хэш-множестве.
-    printf("nodes_count: %Iu\n", hash_set->nodes_count);
+    c_hash_set_for_each(hash_set, print_func_s);
 
-    // Отобразим параметры хэш-множества.
-    printf("slots: %Iu\nslots_count: %Iu\nnodes_count: %Iu\n",
-           (size_t)hash_set->slots,
-           hash_set->slots_count,
-           hash_set->nodes_count);
-
-    // Изменим кол-во слотов хэш-множества.
     c_hash_set_resize(hash_set, 1000);
 
-    // Отобразим параметры хэш-множества.
-    printf("slots: %Iu\nslots_count: %Iu\nnodes_count: %Iu\n",
-           (size_t)hash_set->slots,
-           hash_set->slots_count,
-           hash_set->nodes_count);
+    c_hash_set_for_each(hash_set, print_func_s);
 
-    // Удаление хэш-множества.
     c_hash_set_delete(hash_set, NULL);
 
     getchar();

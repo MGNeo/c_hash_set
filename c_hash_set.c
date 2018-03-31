@@ -133,6 +133,13 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
         }
     }
 
+    // ВАЖНО! Даже если в хэш-множестве уже есть такие данные, таблица сперва расширится,
+    // возможно стоит расширять таблицу после удачной вставки?
+
+    // Возможно, можно оптимизировать процесс расширения, чтобы при переносе узлов в них
+    // происходил поиск данных, которые мы хотим вставить.
+
+
     // Если нужно, то перестраиваем.
     if (rebuild == 1)
     {
@@ -171,7 +178,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
             size_t count = _hash_set->nodes_count;
             for (size_t s = 0; (s < _hash_set->slots_count) && (count > 0); ++s)
             {
-                if (((void**)_hash_set->slots)[s] > 0)
+                if (((void**)_hash_set->slots)[s] != NULL)
                 {
                     void *select_node = ((void**)_hash_set->slots)[s],
                          *relocate_node;
@@ -185,8 +192,8 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
                         const size_t presented_hash = hash % new_slots_count;
 
                         // Переносим узел в новый слот.
-                        *((void**)relocate_node) = ((void**)new_slots)[s];
-                        ((void**)new_slots)[s] = relocate_node;
+                        *((void**)relocate_node) = ((void**)new_slots)[presented_hash];
+                        ((void**)new_slots)[presented_hash] = relocate_node;
                         --count;
                     }
                 }
@@ -216,7 +223,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
             // Данные просматриваемого узла.
             const void *const data_n = ((size_t*)((void**)select_node + 1)) + 1;
             // Сравним детально.
-            if (_hash_set->comp_func(_data, data_n) > 0)// Типы _data и data_n не идентичны!
+            if (_hash_set->comp_func(_data, data_n) > 0)
             {
                 return 0;
             }
@@ -400,4 +407,76 @@ ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
 
         return 2;
     }
+}
+
+// Функция, проверяющая наличие заданных данных в хэш-множестве.
+// Если данные есть в хэш-множестве, возвращает > 0.
+// Если данных нет, возвращает 0.
+// В случае ошибки возвращает < 0.
+ptrdiff_t c_hash_set_check(const c_hash_set * const _hash_set,
+                           const void *const _data)
+{
+    if (_hash_set == NULL) return -1;
+    if (_data == NULL) return -2;
+
+    if (_hash_set->nodes_count == 0) return 0;
+
+    // Неприведенный хэш искомых данных.
+    const size_t hash = _hash_set->hash_func(_data);
+
+    // Приведенный хэш искомых данных.
+    const size_t presented_hash = hash % _hash_set->slots_count;
+
+    void *select_node = ((void**)_hash_set->slots)[presented_hash];
+
+    while(select_node != NULL)
+    {
+        // Неприведенный хэш узла.
+        const size_t hash_n = *((size_t*)(((void**)select_node) + 1));
+
+        // Данные узла.
+        const void *data_n = ((size_t*)(((void**)select_node)+1)) + 1;
+
+        if (hash == hash_n)
+        {
+            if (_hash_set->comp_func(_data, data_n) > 0)
+            {
+                return 1;
+            }
+        }
+
+        select_node = *((void**)select_node);
+    }
+
+    return 0;
+}
+
+// Проходит по всем данным хэш-множества и выполняет над данными заданные действия.
+// В случае успешного выполнения возвращает > 0.
+// В случае, если в хэш-множестве нет данных, возвращает 0.
+// В случае ошибки < 0.
+ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
+                              void (*const _func)(const void *const _data))
+{
+    if (_hash_set == NULL) return -1;
+    if (_func == NULL) return -2;
+
+    if (_hash_set->nodes_count == 0) return 0;
+
+    size_t count = _hash_set->nodes_count;
+    for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
+    {
+        if (((void**)_hash_set->slots)[s] != NULL)
+        {
+            void *select_node = ((void**)_hash_set->slots)[s];
+            while(select_node != NULL)
+            {
+                _func((uint8_t*)select_node + sizeof(void*) + sizeof(size_t*));// Желательно везде сделать смещение так же, чтобы не городить миллиард скобок.
+                --count;
+                select_node = *((void**)select_node);
+            }
+        }
+    }
+
+    return 1;
 }
