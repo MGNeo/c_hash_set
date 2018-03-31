@@ -8,6 +8,8 @@
 #include <stddef.h>
 
 /*
+ *  Слот - это односвязный список.
+ *
  *  Структура узла слота:
  *
  *  Что за данные:                   |___next____|____hash____|_________data___________|
@@ -15,12 +17,6 @@
  *
  *  Указатель на узел указывает сюда ^
  */
-
-typedef struct s_c_slot
-{
-    size_t count;
-    void *head;
-} c_slot;
 
 typedef struct s_c_hash_set
 {
@@ -37,7 +33,7 @@ typedef struct s_c_hash_set
 
     float max_load_factor;
 
-    c_slot *slots;
+    void *slots;
 } c_hash_set;
 
 c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data),
@@ -59,8 +55,5 @@ ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
 
 ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
                             const size_t _slots_count);
-
-ptrdiff_t c_hash_set_find(const c_hash_set *const _hash_set,
-                          const void *const _data);
 
 #endif
