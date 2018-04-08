@@ -29,10 +29,7 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data
         new_slots = malloc(new_slots_size);
         if (new_slots == NULL) return NULL;
 
-        for (size_t i = 0; i < _slots_count; ++i)
-        {
-            ((void**)new_slots)[i] = NULL;
-        }
+        memset(new_slots, 0, new_slots_size);
     }
 
     c_hash_set *const new_hash_set = (c_hash_set*)malloc(sizeof(c_hash_set));
@@ -171,7 +168,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
         if (_hash_set->nodes_count > 0)
         {
             size_t count = _hash_set->nodes_count;
-            for (size_t s = 0; (s < _hash_set->slots_count) && (count > 0); ++s)
+            for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
             {
                 if (((void**)_hash_set->slots)[s] != NULL)
                 {
@@ -181,6 +178,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
                     {
                         relocate_node = select_node;
                         select_node = *((void**)select_node);
+
                         // Неприведенный хэш переносимого узла.
                         const size_t hash = *((size_t*)((void**)relocate_node + 1));
                         // Хэш переносимого узла, приведенный к количеству новых слотов.
@@ -189,6 +187,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
                         // Переносим узел в новый слот.
                         *((void**)relocate_node) = ((void**)new_slots)[presented_hash];
                         ((void**)new_slots)[presented_hash] = relocate_node;
+
                         --count;
                     }
                 }
@@ -377,14 +376,18 @@ ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
         if (_hash_set->nodes_count > 0)
         {
             size_t count = _hash_set->nodes_count;
-            for (size_t s = 0; s < (_hash_set->slots_count) && (count > 0); ++s)
+            for (size_t s = 0; s < (_hash_set->slots_count)&&(count > 0); ++s)
             {
                 if (((void**)_hash_set->slots)[s] != NULL)
                 {
-                    void *relocate_node = ((void**)_hash_set->slots)[s];
+                    void *select_node = ((void**)_hash_set->slots)[s],
+                         *relocate_node;
 
-                    while (relocate_node != NULL)
+                    while (select_node != NULL)
                     {
+                        relocate_node = select_node;
+                        select_node = *((void**)select_node);
+
                         // Неприведенный хэш переносимого узла.
                         const size_t hash = *((size_t*)((void**)relocate_node + 1));
                         // Хэш переносимого узла, приведенный к новому количеству слотов.
@@ -394,8 +397,6 @@ ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
                         ((void**)new_slots)[presented_hash] = relocate_node;
 
                         --count;
-
-                        relocate_node = *((void**)relocate_node);
                     }
                 }
             }
@@ -477,7 +478,7 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
             void *select_node = ((void**)_hash_set->slots)[s];
             while(select_node != NULL)
             {
-                _func((uint8_t*)select_node + sizeof(void*) + sizeof(size_t*));// Желательно везде сделать смещение так же, чтобы не городить миллиард скобок.
+                _func((uint8_t*)select_node + sizeof(void*) + sizeof(size_t*));
                 --count;
                 select_node = *((void**)select_node);
             }
