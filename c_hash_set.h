@@ -38,7 +38,7 @@ typedef struct s_c_hash_set
 
 c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data),
                               size_t (*const _comp_func)(const void *const _a,
-                                                   const void *const _b),
+                                                         const void *const _b),
                               const size_t _data_size,
                               const size_t _slots_count,
                               const float _max_load_factor);
