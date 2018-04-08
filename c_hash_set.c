@@ -13,7 +13,7 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data
     if (_hash_func == NULL) return NULL;
     if (_comp_func == NULL) return NULL;
     if (_data_size == 0) return NULL;
-    if (_max_load_factor < 0.0f) return NULL;
+    if (_max_load_factor <= 0.0f) return NULL;
 
     void *new_slots = NULL;
 
@@ -124,21 +124,16 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
 
     if (_hash_set->slots_count == 0)
     {
+        // Вообще нет слотов.
         rebuild = 1;
     } else {
+        // Превышен максимальная загруженность.
         const float load_factor = (float)_hash_set->nodes_count / _hash_set->slots_count;
-        if (load_factor >= _hash_set->max_load_factor)
+        if (load_factor > _hash_set->max_load_factor)
         {
             rebuild = 1;
         }
     }
-
-    // ВАЖНО! Даже если в хэш-множестве уже есть такие данные, таблица сперва расширится,
-    // возможно стоит расширять таблицу после удачной вставки?
-
-    // Возможно, можно оптимизировать процесс расширения, чтобы при переносе узлов в них
-    // происходил поиск данных, которые мы хотим вставить. Нет, потому что при миллиарде эллементов будет
-    // происходить миллиард проверок, лучше сотня проверок после перестройки.
 
     // Если нужно, то перестраиваем.
     if (rebuild == 1)
@@ -200,12 +195,13 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
             }
         }
 
-        // Если слоты были, удаляем их. ДОРАБОТАТЬ <<<<<<<<<<<<<<<<<<<<
+        // Если старые слоты были, нужно их удалить.
         if (_hash_set->slots_count > 0)
         {
             free(_hash_set->slots);
         }
 
+        // Используем новые слоты.
         _hash_set->slots = new_slots;
         _hash_set->slots_count = new_slots_count;
     }
@@ -405,7 +401,13 @@ ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
             }
 
         }
-        free(_hash_set->slots);
+        // Если старые слоты были, нужно их удалить.
+        if (_hash_set->slots_count > 0)
+        {
+            free(_hash_set->slots);
+        }
+
+        // Используем новые слоты.
         _hash_set->slots = new_slots;
         _hash_set->slots_count = _slots_count;
 
