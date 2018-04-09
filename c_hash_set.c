@@ -197,11 +197,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
             }
         }
 
-        // Если старые слоты были, нужно их удалить.
-        if (_hash_set->slots_count > 0)
-        {
-            free(_hash_set->slots);
-        }
+        free(_hash_set->slots);
 
         // Используем новые слоты.
         _hash_set->slots = new_slots;
@@ -405,11 +401,8 @@ ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
             }
 
         }
-        // Если старые слоты были, нужно их удалить.
-        if (_hash_set->slots_count > 0)
-        {
-            free(_hash_set->slots);
-        }
+
+        free(_hash_set->slots);
 
         // Используем новые слоты.
         _hash_set->slots = new_slots;
