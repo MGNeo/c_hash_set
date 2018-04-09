@@ -127,7 +127,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
         // Вообще нет слотов.
         rebuild = 1;
     } else {
-        // Превышен максимальная загруженность.
+        // Превышена максимальная загруженность.
         const float load_factor = (float)_hash_set->nodes_count / _hash_set->slots_count;
         if (load_factor > _hash_set->max_load_factor)
         {
