@@ -76,7 +76,7 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                         delete_node = select_node;
                         select_node = *((void**)select_node);
 
-                        _del_func( ((size_t*)((void**)delete_node + 1)) + 1 );
+                        _del_func( (uint8_t*)delete_node + sizeof(void*) + sizeof(size_t) );
                         free(delete_node);
                         --count;
                     }
@@ -223,7 +223,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
         if (hash == hash_n)
         {
             // Данные просматриваемого узла.
-            const void *const data_n = ((size_t*)((void**)select_node + 1)) + 1;
+            const void *const data_n = (uint8_t*)select_node + sizeof(void*) + sizeof(size_t);
             // Сравним детально.
             if (_hash_set->comp_func(_data, data_n) > 0)
             {
@@ -301,7 +301,7 @@ ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
         if (hash == hash_n)
         {
             // Данные узла.
-            void *data_n = ((size_t*)((void**)select_node + 1)) + 1;
+            void *data_n = (uint8_t*)select_node + sizeof(void*) + sizeof(size_t);
             if (_hash_set->comp_func(_data, data_n) > 0)
             {
                 // Удаляем данный узел.
@@ -312,7 +312,7 @@ ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
                 // Вызываем для данных узла функцию удаления, если она задана.
                 if (_del_func != NULL)
                 {
-                    _del_func( ((size_t*)((void**)select_node + 1)) + 1 );
+                    _del_func( (uint8_t*)select_node + sizeof(void*) + sizeof(size_t) );
                 }
                 // Удаляем узел.
                 free(select_node);
@@ -445,7 +445,7 @@ ptrdiff_t c_hash_set_check(const c_hash_set * const _hash_set,
         const size_t hash_n = *((size_t*)(((void**)select_node) + 1));
 
         // Данные узла.
-        const void *data_n = ((size_t*)(((void**)select_node)+1)) + 1;
+        const void *data_n = (uint8_t*)select_node + sizeof(void*) + sizeof(size_t);
 
         if (hash == hash_n)
         {
