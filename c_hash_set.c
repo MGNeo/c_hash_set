@@ -82,7 +82,6 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                     }
                 }
             }
-            free(_hash_set->slots);
         } else {
             for (size_t s = 0; (s < _hash_set->nodes_count)&&(count > 0); ++s)
             {
@@ -100,9 +99,10 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                     }
                 }
             }
-            free(_hash_set->slots);
         }
     }
+
+    free(_hash_set->slots);
 
     free(_hash_set);
 
@@ -475,8 +475,8 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
             while(select_node != NULL)
             {
                 _func((uint8_t*)select_node + sizeof(void*) + sizeof(size_t*));
-                --count;
                 select_node = *((void**)select_node);
+                --count;
             }
         }
     }
