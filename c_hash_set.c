@@ -62,13 +62,14 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
 
     if (_hash_set->nodes_count > 0)
     {
+        size_t count = _hash_set->nodes_count;
         if (_del_func != NULL)
         {
-            for (size_t i = 0; i < _hash_set->nodes_count; ++i)
+            for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
             {
-                if (((void**)_hash_set->slots)[i] != NULL)
+                if (((void**)_hash_set->slots)[s] != NULL)
                 {
-                    void *select_node = ((void**)_hash_set->slots)[i],
+                    void *select_node = ((void**)_hash_set->slots)[s],
                          *delete_node;
                     while(select_node != NULL)
                     {
@@ -77,16 +78,17 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
 
                         _del_func( ((size_t*)((void**)delete_node + 1)) + 1 );
                         free(delete_node);
+                        --count;
                     }
                 }
             }
             free(_hash_set->slots);
         } else {
-            for (size_t i = 0; i < _hash_set->nodes_count; ++i)
+            for (size_t s = 0; (s < _hash_set->nodes_count)&&(count > 0); ++s)
             {
-                if (((void**)_hash_set->slots)[i] != NULL)
+                if (((void**)_hash_set->slots)[s] != NULL)
                 {
-                    void *select_node = ((void**)_hash_set->slots)[i],
+                    void *select_node = ((void**)_hash_set->slots)[s],
                          *delete_node;
                     while(select_node != NULL)
                     {
@@ -94,6 +96,7 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                         select_node = *((void**)select_node);
 
                         free(delete_node);
+                        --count;
                     }
                 }
             }
