@@ -71,7 +71,7 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                 {
                     void *select_node = ((void**)_hash_set->slots)[s],
                          *delete_node;
-                    while(select_node != NULL)
+                    while (select_node != NULL)
                     {
                         delete_node = select_node;
                         select_node = *((void**)select_node);
@@ -89,7 +89,7 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                 {
                     void *select_node = ((void**)_hash_set->slots)[s],
                          *delete_node;
-                    while(select_node != NULL)
+                    while (select_node != NULL)
                     {
                         delete_node = select_node;
                         select_node = *((void**)select_node);
@@ -177,7 +177,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
                 {
                     void *select_node = ((void**)_hash_set->slots)[s],
                          *relocate_node;
-                    while(select_node != NULL)
+                    while (select_node != NULL)
                     {
                         relocate_node = select_node;
                         select_node = *((void**)select_node);
@@ -212,7 +212,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
 
     // Проверим, имеется ли уже такой элемент в слоте.
     void *select_node = ((void**)_hash_set->slots)[presented_hash];
-    while(select_node != NULL)
+    while (select_node != NULL)
     {
         // Реальный хэш данных просматриваемого узла.
         const size_t hash_n = *((size_t*)((void**)select_node + 1));
@@ -432,7 +432,7 @@ ptrdiff_t c_hash_set_check(const c_hash_set * const _hash_set,
 
     void *select_node = ((void**)_hash_set->slots)[presented_hash];
 
-    while(select_node != NULL)
+    while (select_node != NULL)
     {
         // Неприведенный хэш узла.
         const size_t hash_n = *((size_t*)(((void**)select_node) + 1));
@@ -472,7 +472,7 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
         if (((void**)_hash_set->slots)[s] != NULL)
         {
             void *select_node = ((void**)_hash_set->slots)[s];
-            while(select_node != NULL)
+            while (select_node != NULL)
             {
                 _func((uint8_t*)select_node + sizeof(void*) + sizeof(size_t*));
                 select_node = *((void**)select_node);
