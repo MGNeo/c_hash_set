@@ -375,7 +375,7 @@ ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
         if (_hash_set->nodes_count > 0)
         {
             size_t count = _hash_set->nodes_count;
-            for (size_t s = 0; s < (_hash_set->slots_count)&&(count > 0); ++s)
+            for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
             {
                 if (((void**)_hash_set->slots)[s] != NULL)
                 {
