@@ -62,4 +62,7 @@ ptrdiff_t c_hash_set_check(const c_hash_set *const _hash_set,
 ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
                               void (*const _func)(const void *const _data));
 
+ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
+                           void (*const _del_func)(void *const _data));
+
 #endif

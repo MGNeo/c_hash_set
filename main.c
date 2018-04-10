@@ -89,6 +89,10 @@ int main(int argc, char **argv)
 
     c_hash_set_for_each(hash_set, print_func_s);
 
+    c_hash_set_clear(hash_set, NULL);
+
+    c_hash_set_for_each(hash_set, print_func_s);
+
     c_hash_set_delete(hash_set, NULL);
 
     getchar();

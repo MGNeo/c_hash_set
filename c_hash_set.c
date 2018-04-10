@@ -83,6 +83,8 @@ ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                 }
             }
         } else {
+            // Дублирование кода, для того чтобы на каждом узле не проверять,
+            // задана ли функция удаления данных узла.
             for (size_t s = 0; (s < _hash_set->nodes_count)&&(count > 0); ++s)
             {
                 if (((void**)_hash_set->slots)[s] != NULL)
@@ -441,7 +443,7 @@ ptrdiff_t c_hash_set_check(const c_hash_set * const _hash_set,
         {
             // Данные узла.
             const void *const data_n = (uint8_t*)select_node + sizeof(void*) + sizeof(size_t);
-          
+
             if (_hash_set->comp_func(_data, data_n) > 0)
             {
                 return 1;
@@ -480,6 +482,71 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
             }
         }
     }
+
+    return 1;
+}
+
+// Очищает хэш-множество ото всех элементов, сохраняя количество слотов.
+// В случае успеха возвращает > 0.
+// Если в хэш-множестве не было элементов, возвращает 0.
+// В случае ошибки возвращает < 0.
+ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
+                           void (*const _del_func)(void *const _data))
+{
+    if (_hash_set == NULL) return -1;
+
+    if (_hash_set->nodes_count == 0) return 0;
+
+    size_t count = _hash_set->nodes_count;
+
+    if (_del_func != NULL)
+    {
+        for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
+        {
+            if (((void**)_hash_set->slots)[s] != NULL)
+            {
+                void *select_node = ((void**)_hash_set->slots)[s],
+                     *delete_node;
+                while (select_node != NULL)
+                {
+                    delete_node = select_node;
+                    select_node = *((void**)select_node);
+
+                    _del_func( (uint8_t*)delete_node + sizeof(void*) + sizeof(size_t) );
+
+                    free(delete_node);
+
+                    --count;
+                }
+
+                ((void**)_hash_set->slots)[s] = NULL;
+            }
+        }
+    } else {
+        // Дублирование кода, для того, чтобы на каждом узле не проверять, задана ли
+        // функция удаления данных узла.
+        for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
+        {
+            if (((void**)_hash_set->slots)[s] != NULL)
+            {
+                void *select_node = ((void**)_hash_set->slots)[s],
+                     *delete_node;
+                while (select_node != NULL)
+                {
+                    delete_node = select_node;
+                    select_node = *((void**)select_node);
+
+                    free(delete_node);
+
+                    --count;
+                }
+
+                ((void**)_hash_set->slots)[s] = NULL;
+            }
+        }
+    }
+
+    _hash_set->nodes_count = 0;
 
     return 1;
 }
