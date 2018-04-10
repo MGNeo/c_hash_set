@@ -471,7 +471,7 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
     {
         if (((void**)_hash_set->slots)[s] != NULL)
         {
-            void *select_node = ((void**)_hash_set->slots)[s];
+            const void *select_node = ((void**)_hash_set->slots)[s];
             while (select_node != NULL)
             {
                 _func((uint8_t*)select_node + sizeof(void*) + sizeof(size_t*));
