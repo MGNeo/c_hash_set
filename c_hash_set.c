@@ -243,7 +243,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     void *const new_node = malloc(new_node_size);
     if (new_node == NULL)
     {
-        return NULL;
+        return -9;
     }
 
     // Копируем в узел неприведенный хэш.
