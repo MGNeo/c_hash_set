@@ -440,7 +440,7 @@ ptrdiff_t c_hash_set_check(const c_hash_set * const _hash_set,
         if (hash == hash_n)
         {
             // Данные узла.
-            const void *data_n = (uint8_t*)select_node + sizeof(void*) + sizeof(size_t);
+            const void *const data_n = (uint8_t*)select_node + sizeof(void*) + sizeof(size_t);
           
             if (_hash_set->comp_func(_data, data_n) > 0)
             {
