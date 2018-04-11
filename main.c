@@ -10,8 +10,7 @@ size_t hash_func_s(const void *const _data)
     const char *c = *((char**)_data);
     while(*c != 0)
     {
-        hash += *c;
-        ++c;
+        hash += *(c++);
     }
     return hash;
 }
@@ -59,29 +58,13 @@ int main(int argc, char **argv)
     const char *const string_3 = "Blue";
     const char *const string_4 = "Computer";
 
-    printf("insert string_1\n");
     c_hash_set_insert(hash_set, &string_1);
-    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
-    printf("insert string_2\n");
     c_hash_set_insert(hash_set, &string_2);
-    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
-    printf("insert string_3\n");
     c_hash_set_insert(hash_set, &string_3);
-    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
-    printf("insert string_4\n");
     c_hash_set_insert(hash_set, &string_4);
-    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
-
-    printf("insert string_1\n");
-    c_hash_set_insert(hash_set, &string_1);
-    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
-
-    printf("insert string_2\n");
-    c_hash_set_insert(hash_set, &string_2);
-    printf("nodes_count: %Iu\nslots_count: %Iu\n\n", hash_set->nodes_count, hash_set->slots_count);
 
     c_hash_set_for_each(hash_set, print_func_s);
 
