@@ -153,16 +153,21 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
         if (load_factor >= _hash_set->max_load_factor)
         {
             // Определим новое количество слотов.
-            const size_t new_slots_count = _hash_set->slots_count * 1.75f;
+            size_t new_slots_count = _hash_set->slots_count * 1.75f;
             if (new_slots_count < _hash_set->slots_count)
             {
                 return -4;
+            }
+            new_slots_count += 1;
+            if (new_slots_count == 0)
+            {
+                return -5;
             }
 
             // Пытаемся расширить слоты.
             if (c_hash_set_resize(_hash_set, new_slots_count) < 0)
             {
-                return -5;
+                return -6;
             }
         }
     }
@@ -170,7 +175,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     ptrdiff_t r_code = c_hash_set_check(_hash_set, _data);
 
     // Ошибка.
-    if (r_code < 0) return -6;
+    if (r_code < 0) return -7;
 
     // Данные уже имеются.
     if (r_code > 0) return 0;
@@ -181,14 +186,14 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     const size_t new_node_size = sizeof(void*) + sizeof(size_t) + _hash_set->data_size;
     if (new_node_size < _hash_set->data_size)
     {
-        return -7;
+        return -8;
     }
 
     // Попытаемся выделить память под узел.
     void *const new_node = malloc(new_node_size);
     if (new_node == NULL)
     {
-        return -8;
+        return -9;
     }
 
     // Заполним узел и вставим в нужный слот.
