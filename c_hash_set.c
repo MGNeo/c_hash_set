@@ -134,140 +134,75 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     if (_hash_set == NULL) return -1;
     if (_data == NULL) return -2;
 
-    // Сперва определим, есть ли необходимость перестроить (расширить) таблицу хэш-множества.
-    size_t rebuild = 0;
+    // Первым делом контролируем процесс увеличения количества слотов.
 
+    // Если слотов нет вообще.
     if (_hash_set->slots_count == 0)
     {
-        // Вообще нет слотов.
-        rebuild = 1;
+        // Задаем новое количество слотов с некоторым запасом.
+        const size_t new_slots_count = EXTENSION_FROM_ZERO;
+
+        // Попытаемся расширить слоты.
+        if (c_hash_set_resize(_hash_set, new_slots_count) < 0)
+        {
+            return -3;
+        }
     } else {
-        // Превышена максимальная загруженность.
+        // Если слоты есть, то при достижении предела загруженности увеличиваем количество слотов.
         const float load_factor = (float)_hash_set->nodes_count / _hash_set->slots_count;
-        if (load_factor > _hash_set->max_load_factor)
+        if (load_factor >= _hash_set->max_load_factor)
         {
-            rebuild = 1;
-        }
-    }
-
-    // Если нужно, то перестраиваем.
-    if (rebuild == 1)
-    {
-        // Определяем новое количество слотов.
-        size_t new_slots_count = _hash_set->slots_count * 1.75f;
-        if (new_slots_count < _hash_set->slots_count)
-        {
-            return -4;
-        }
-        new_slots_count += 1;
-        if (new_slots_count == 0)
-        {
-            return -5;
-        }
-        // Определим количество памяти, необходимое под новые слоты.
-        const size_t new_slots_size = new_slots_count * sizeof(void*);
-        if ( (new_slots_size == 0) ||
-             (new_slots_size / new_slots_count != sizeof(void*)) )
-        {
-            return -6;
-        }
-
-        // Пытаемся выделить память под новые слоты.
-        void *const new_slots = malloc(new_slots_size);
-        if (new_slots == NULL)
-        {
-            return -7;
-        }
-
-        // Обнулим новые слоты.
-        memset(new_slots, 0, new_slots_size);
-
-        // Если в старых слотах есть узлы, то переносим их в новые слоты.
-        if (_hash_set->nodes_count > 0)
-        {
-            size_t count = _hash_set->nodes_count;
-            for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
+            // Определим новое количество слотов.
+            const size_t new_slots_count = _hash_set->slots_count * 1.75f;
+            if (new_slots_count < _hash_set->slots_count)
             {
-                if (((void**)_hash_set->slots)[s] != NULL)
-                {
-                    void *select_node = ((void**)_hash_set->slots)[s],
-                         *relocate_node;
-                    while (select_node != NULL)
-                    {
-                        relocate_node = select_node;
-                        select_node = *((void**)select_node);
+                return -4;
+            }
 
-                        // Неприведенный хэш переносимого узла.
-                        const size_t hash = *((size_t*)((void**)relocate_node + 1));
-                        // Хэш переносимого узла, приведенный к количеству новых слотов.
-                        const size_t presented_hash = hash % new_slots_count;
-
-                        // Переносим узел в новый слот.
-                        *((void**)relocate_node) = ((void**)new_slots)[presented_hash];
-                        ((void**)new_slots)[presented_hash] = relocate_node;
-
-                        --count;
-                    }
-                }
+            // Пытаемся расширить слоты.
+            if (c_hash_set_resize(_hash_set, new_slots_count) < 0)
+            {
+                return -5;
             }
         }
-
-        free(_hash_set->slots);
-
-        // Используем новые слоты.
-        _hash_set->slots = new_slots;
-        _hash_set->slots_count = new_slots_count;
     }
+    // Проверим, имеются ли в хэш-множестве заданные данные.
+    ptrdiff_t r_code = c_hash_set_check(_hash_set, _data);
 
-    // Неприведенный хэш вставляемых данных.
-    const size_t hash = _hash_set->hash_func(_data);
+    // Ошибка.
+    if (r_code < 0) return -6;
 
-    // Приведенный хэш вставляемых данных.
-    const size_t presented_hash = hash % _hash_set->slots_count;
+    // Данные уже имеются.
+    if (r_code > 0) return 0;
 
-    // Проверим, имеется ли уже такой элемент в слоте.
-    void *select_node = ((void**)_hash_set->slots)[presented_hash];
-    while (select_node != NULL)
-    {
-        // Реальный хэш данных просматриваемого узла.
-        const size_t hash_n = *((size_t*)((void**)select_node + 1));
-        if (hash == hash_n)
-        {
-            // Данные просматриваемого узла.
-            const void *const data_n = (uint8_t*)select_node + sizeof(void*) + sizeof(size_t);
-            // Сравним детально.
-            if (_hash_set->comp_func(_data, data_n) > 0)
-            {
-                return 0;
-            }
-        }
+    // Вставляем данные в хэш-множество.
 
-        select_node = *((void**)select_node);
-    }
-
-    // Если такого элемента в слоте нет, вставляем его туда.
-
-    // Определим размер формируемого узла.
+    // Определим размер создаваемого узла.
     const size_t new_node_size = sizeof(void*) + sizeof(size_t) + _hash_set->data_size;
     if (new_node_size < _hash_set->data_size)
+    {
+        return -7;
+    }
+
+    // Попытаемся выделить память под узел.
+    void *const new_node = malloc(new_node_size);
+    if (new_node == NULL)
     {
         return -8;
     }
 
-    // Попытаемся сформировать узел.
-    void *const new_node = malloc(new_node_size);
-    if (new_node == NULL)
-    {
-        return -9;
-    }
+    // Заполним узел и вставим в нужный слот.
 
-    // Копируем в узел неприведенный хэш.
+    // Неприведенный хэш вставляемых данных.
+    const size_t hash = _hash_set->hash_func(_data);
+    // Хэш вставляемых данных, приведенный к количеству слотов.
+    const size_t presented_hash = hash % _hash_set->slots_count;
+
+    // Записываем в узел неприведенный хэш данных.
     *((size_t*)((void**)new_node + 1)) = hash;
-
     // Копируем в узел данные.
-    memcpy(((size_t*)((void**)new_node + 1) + 1), _data, _hash_set->data_size);
-
-    // Встраиваем узел в слот.
+    memcpy((uint8_t*)new_node + sizeof(void*) + sizeof(size_t), _data, _hash_set->data_size);
+    // Вставляем узел в слот.
     *((void**)new_node) = ((void**)_hash_set->slots)[presented_hash];
     ((void**)_hash_set->slots)[presented_hash] = new_node;
 

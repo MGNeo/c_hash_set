@@ -43,6 +43,8 @@ void print_func_s(const void *const _data)
     const char *const string = *((char**)_data);
 
     printf("%s\n", string);
+
+    return;
 }
 
 int main(int argc, char **argv)
