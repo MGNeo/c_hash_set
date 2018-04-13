@@ -4,7 +4,7 @@
     ОС: Windows 10/x64
     IDE: Code::Blocks 17.12
     Компилятор: default Code::Blocks 17.12 MinGW
-    
+
     Разработчик: Глухманюк Максим
     Эл. почта: mgneo@yandex.ru
     Место: Российская Федерация, Самарская область, Сызрань
@@ -72,50 +72,9 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data
 ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                             void (*const _del_func)(void *const _data))
 {
-    if (_hash_set == NULL) return -1;
-
-    if (_hash_set->nodes_count > 0)
+    if (c_hash_set_clear(_hash_set, _del_func) < 0)
     {
-        size_t count = _hash_set->nodes_count;
-        if (_del_func != NULL)
-        {
-            for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
-            {
-                if (((void**)_hash_set->slots)[s] != NULL)
-                {
-                    void *select_node = ((void**)_hash_set->slots)[s],
-                         *delete_node;
-                    while (select_node != NULL)
-                    {
-                        delete_node = select_node;
-                        select_node = *((void**)select_node);
-
-                        _del_func( (uint8_t*)delete_node + sizeof(void*) + sizeof(size_t) );
-                        free(delete_node);
-                        --count;
-                    }
-                }
-            }
-        } else {
-            // Дублирование кода, для того чтобы на каждом узле не проверять,
-            // задана ли функция удаления данных узла.
-            for (size_t s = 0; (s < _hash_set->nodes_count)&&(count > 0); ++s)
-            {
-                if (((void**)_hash_set->slots)[s] != NULL)
-                {
-                    void *select_node = ((void**)_hash_set->slots)[s],
-                         *delete_node;
-                    while (select_node != NULL)
-                    {
-                        delete_node = select_node;
-                        select_node = *((void**)select_node);
-
-                        free(delete_node);
-                        --count;
-                    }
-                }
-            }
-        }
+        return -1;
     }
 
     free(_hash_set->slots);
@@ -441,8 +400,8 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
 }
 
 // Очищает хэш-множество ото всех элементов, сохраняя количество слотов.
-// В случае успеха возвращает > 0.
-// Если в хэш-множестве не было элементов, возвращает 0.
+// В случае успешного очищения, возвращает > 0.
+// Если в хэш-множестве нет элементов, возвращает 0.
 // В случае ошибки возвращает < 0.
 ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
                            void (*const _del_func)(void *const _data))
