@@ -9,10 +9,10 @@
 size_t hash_func_s(const void *const _data)
 {
     if (_data == NULL) return 0;
-
+    
     size_t hash = 0;
     const char *c = _data;
-
+    
     while (*c != 0)
     {
         hash += *(c++);
@@ -45,8 +45,10 @@ size_t comp_func_s(const void *const _a,
 void func_print_s(const void *const _data)
 {
     if (_data == NULL) return;
+    
     const char *const data = (char*)_data;
     printf("%s\n", data);
+    
     return;
 }
 
