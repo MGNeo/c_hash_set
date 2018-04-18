@@ -22,7 +22,7 @@
 #include <stddef.h>
 
 // Количество слотов, задаваемое хэш-множеству с нулем слотов при автоматическом расширении.
-#define EXTENSION_FROM_ZERO ( (size_t) 1024 )
+#define C_HASH_SET_0 ( (size_t) 1024 )
 
 typedef struct s_c_hash_set_node
 {
