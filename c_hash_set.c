@@ -99,11 +99,12 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     {
         // Задаем новое количество слотов с некоторым запасом.
         const size_t new_slots_count = EXTENSION_FROM_ZERO;
+        if (new_slots_count == 0) return -3;
 
         // Попытаемся расширить слоты.
         if (c_hash_set_resize(_hash_set, new_slots_count) < 0)
         {
-            return -3;
+            return -4;
         }
     } else {
         // Если слоты есть, то при достижении предела загруженности увеличиваем их количество.
@@ -114,18 +115,18 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
             size_t new_slots_count = _hash_set->slots_count * 1.75f;
             if (new_slots_count < _hash_set->slots_count)
             {
-                return -4;
+                return -5;
             }
             new_slots_count += 1;
             if (new_slots_count == 0)
             {
-                return -5;
+                return -6;
             }
 
             // Пытаемся расширить слоты.
             if (c_hash_set_resize(_hash_set, new_slots_count) < 0)
             {
-                return -6;
+                return -7;
             }
         }
     }
@@ -133,7 +134,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     ptrdiff_t r_code = c_hash_set_check(_hash_set, _data);
 
     // Ошибка.
-    if (r_code < 0) return -7;
+    if (r_code < 0) return -8;
 
     // Данные уже имеются.
     if (r_code > 0) return 0;
