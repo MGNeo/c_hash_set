@@ -40,8 +40,8 @@ typedef struct s_c_hash_set
     size_t (*comp_func)(const void *const _a,
                         const void *const _b);
 
-    size_t slots_count;
-    size_t nodes_count;
+    size_t slots_count,
+           nodes_count;
 
     float max_load_factor;
 
