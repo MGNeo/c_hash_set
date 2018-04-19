@@ -358,10 +358,10 @@ ptrdiff_t c_hash_set_check(const c_hash_set * const _hash_set,
 // В случае, если в хэш-множестве нет данных, возвращает 0.
 // В случае ошибки < 0.
 ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
-                              void (*const _action)(const void *const _data))
+                              void (*const _action_data)(const void *const _data))
 {
     if (_hash_set == NULL) return -1;
-    if (_action == NULL) return -2;
+    if (_action_data == NULL) return -2;
 
     if (_hash_set->nodes_count == 0) return 0;
 
@@ -373,7 +373,7 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
             const c_hash_set_node *select_node = _hash_set->slots[s];
             while (select_node != NULL)
             {
-                _action(select_node->data);
+                _action_data( select_node->data );
                 select_node = select_node->next_node;
                 --count;
             }
