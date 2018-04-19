@@ -17,14 +17,14 @@
 // Создание пустого хэш-множества с заданным количеством слотов.
 // Позволяет создавать хэш-множество с нулевым кол-вом слотов.
 // В случае успеха возвращает указатель на созданное хэш-множество, иначе NULL.
-c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data),
-                              size_t (*const _comp_func)(const void *const _a,
-                                                   const void *const _b),
+c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data),
+                              size_t (*const _comp_data)(const void *const _data_a,
+                                                              const void *const _data_b),
                               const size_t _slots_count,
                               const float _max_load_factor)
 {
-    if (_hash_func == NULL) return NULL;
-    if (_comp_func == NULL) return NULL;
+    if (_hash_data == NULL) return NULL;
+    if (_comp_data == NULL) return NULL;
     if (_max_load_factor <= 0.0f) return NULL;
 
     c_hash_set_node **new_slots = NULL;
@@ -51,8 +51,8 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data
         return NULL;
     }
 
-    new_hash_set->hash_func = _hash_func;
-    new_hash_set->comp_func = _comp_func;
+    new_hash_set->hash_data = _hash_data;
+    new_hash_set->comp_data = _comp_data;
 
     new_hash_set->slots_count = _slots_count;
     new_hash_set->nodes_count = 0;
@@ -67,9 +67,9 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data
 // Удаление хэш-множества.
 // В случае успеха возвращает > 0, иначе < 0.
 ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
-                            void (*const _del_func)(void *const _data))
+                            void (*const _del_data)(void *const _data))
 {
-    if (c_hash_set_clear(_hash_set, _del_func) < 0)
+    if (c_hash_set_clear(_hash_set, _del_data) < 0)
     {
         return -1;
     }
@@ -147,7 +147,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     // Заполним узел и вставим в нужный слот.
 
     // Неприведенный хэш вставляемых данных.
-    const size_t hash = _hash_set->hash_func(_data);
+    const size_t hash = _hash_set->hash_data(_data);
     // Хэш вставляемых данных, приведенный к количеству слотов.
     const size_t presented_hash = hash % _hash_set->slots_count;
 
@@ -156,7 +156,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     // Связываем узел с данными.
     new_node->data = (void*)_data;
     // Вставляем узел в слот.
-    new_node->next = _hash_set->slots[presented_hash];
+    new_node->next_node = _hash_set->slots[presented_hash];
     _hash_set->slots[presented_hash] = new_node;
 
     ++_hash_set->nodes_count;
@@ -170,14 +170,14 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
 // В случае ошибки возвращает < 0.
 ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
                            const void *const _data,
-                           void (*const _del_func)(void *const _data))
+                           void (*const _del_data)(void *const _data))
 {
     if (_hash_set == NULL) return -1;
     if (_data == NULL) return -2;
     if (_hash_set->nodes_count == 0) return 0;
 
     // Вычислим неприведенный хэш удаляемых данных.
-    const size_t hash = _hash_set->hash_func(_data);
+    const size_t hash = _hash_set->hash_data(_data);
 
     // Вычислим приведенный хэш удаляемых данных.
     const size_t presented_hash = hash % _hash_set->slots_count;
@@ -196,22 +196,22 @@ ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
     {
         if (hash == select_node->hash)
         {
-            if (_hash_set->comp_func(_data, select_node->data) > 0)
+            if (_hash_set->comp_data(_data, select_node->data) > 0)
             {
                 // Удаляем данный узел.
 
                 // Ампутация узла из слота.
                 if (prev_node != NULL)
                 {
-                    prev_node->next = select_node->next;
+                    prev_node->next_node = select_node->next_node;
                 } else {
-                    _hash_set->slots[presented_hash] = select_node->next;
+                    _hash_set->slots[presented_hash] = select_node->next_node;
                 }
 
                 // Вызываем для данных узла функцию удаления, если она задана.
-                if (_del_func != NULL)
+                if (_del_data != NULL)
                 {
-                    _del_func( select_node->data);
+                    _del_data( select_node->data);
                 }
                 // Удаляем узел.
                 free(select_node);
@@ -223,7 +223,7 @@ ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
         }
 
         prev_node = select_node;
-        select_node = select_node->next;
+        select_node = select_node->next_node;
     }
 
     return 0;
@@ -288,14 +288,14 @@ ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
                     while (select_node != NULL)
                     {
                         relocate_node = select_node;
-                        select_node = select_node->next;
+                        select_node = select_node->next_node;
 
                         // Неприведенный хэш переносимого узла.
                         const size_t hash = relocate_node->hash;
                         // Хэш переносимого узла, приведенный к новому количеству слотов.
                         const size_t presented_hash = hash % _slots_count;
 
-                        relocate_node->next = new_slots[presented_hash];
+                        relocate_node->next_node = new_slots[presented_hash];
                         new_slots[presented_hash] = relocate_node;
 
                         --count;
@@ -328,7 +328,7 @@ ptrdiff_t c_hash_set_check(const c_hash_set * const _hash_set,
     if (_hash_set->nodes_count == 0) return 0;
 
     // Неприведенный хэш искомых данных.
-    const size_t hash = _hash_set->hash_func(_data);
+    const size_t hash = _hash_set->hash_data(_data);
 
     // Приведенный хэш искомых данных.
     const size_t presented_hash = hash % _hash_set->slots_count;
@@ -341,13 +341,13 @@ ptrdiff_t c_hash_set_check(const c_hash_set * const _hash_set,
         if (hash == select_node->hash)
         {
             // Данные узла.
-            if (_hash_set->comp_func(_data, select_node->data) > 0)
+            if (_hash_set->comp_data(_data, select_node->data) > 0)
             {
                 return 1;
             }
         }
 
-        select_node = select_node->next;
+        select_node = select_node->next_node;
     }
 
     return 0;
@@ -358,10 +358,10 @@ ptrdiff_t c_hash_set_check(const c_hash_set * const _hash_set,
 // В случае, если в хэш-множестве нет данных, возвращает 0.
 // В случае ошибки < 0.
 ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
-                              void (*const _func)(const void *const _data))
+                              void (*const _action)(const void *const _data))
 {
     if (_hash_set == NULL) return -1;
-    if (_func == NULL) return -2;
+    if (_action == NULL) return -2;
 
     if (_hash_set->nodes_count == 0) return 0;
 
@@ -373,8 +373,8 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
             const c_hash_set_node *select_node = _hash_set->slots[s];
             while (select_node != NULL)
             {
-                _func(select_node->data);
-                select_node = select_node->next;
+                _action(select_node->data);
+                select_node = select_node->next_node;
                 --count;
             }
         }
@@ -388,7 +388,7 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
 // Если в хэш-множестве нет элементов, возвращает 0.
 // В случае ошибки возвращает < 0.
 ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
-                           void (*const _del_func)(void *const _data))
+                           void (*const _del_data)(void *const _data))
 {
     if (_hash_set == NULL) return -1;
 
@@ -396,7 +396,7 @@ ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
 
     size_t count = _hash_set->nodes_count;
 
-    if (_del_func != NULL)
+    if (_del_data != NULL)
     {
         for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
         {
@@ -407,9 +407,9 @@ ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
                 while (select_node != NULL)
                 {
                     delete_node = select_node;
-                    select_node = select_node->next;
+                    select_node = select_node->next_node;
 
-                    _del_func( delete_node->data );
+                    _del_data( delete_node->data );
 
                     free(delete_node);
 
@@ -431,7 +431,7 @@ ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
                 while (select_node != NULL)
                 {
                     delete_node = select_node;
-                    select_node = select_node->next;
+                    select_node = select_node->next_node;
 
                     free(delete_node);
 

@@ -26,7 +26,7 @@
 
 typedef struct s_c_hash_set_node
 {
-    struct s_c_hash_set_node *next;
+    struct s_c_hash_set_node *next_node;
     size_t hash;
     void *data;
 } c_hash_set_node;
@@ -34,11 +34,11 @@ typedef struct s_c_hash_set_node
 typedef struct s_c_hash_set
 {
     // Функция, генерирующая хэш на основе данных.
-    size_t (*hash_func)(const void *const _data);
+    size_t (*hash_data)(const void *const _data);
     // Функция детального сравнения данных.
     // В случае идентичности данных должна возвращать > 0, иначе 0.
-    size_t (*comp_func)(const void *const _a,
-                        const void *const _b);
+    size_t (*comp_data)(const void *const _data_a,
+                        const void *const _data_b);
 
     size_t slots_count,
            nodes_count;
@@ -48,21 +48,21 @@ typedef struct s_c_hash_set
     c_hash_set_node **slots;
 } c_hash_set;
 
-c_hash_set *c_hash_set_create(size_t (*const _hash_func)(const void *const _data),
-                              size_t (*const _comp_func)(const void *const _a,
-                                                         const void *const _b),
+c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data),
+                              size_t (*const _comp_data)(const void *const _data_a,
+                                                         const void *const _data_b),
                               const size_t _slots_count,
                               const float _max_load_factor);
 
 ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
-                            void (*const _del_func)(void *const _data));
+                            void (*const _del_data)(void *const _data));
 
 ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
                             const void *const _data);
 
 ptrdiff_t c_hash_set_erase(c_hash_set *const _hash_set,
                            const void *const _data,
-                           void (*const _del_func)(void *const _data));
+                           void (*const _del_data)(void *const _data));
 
 ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
                             const size_t _slots_count);
@@ -71,9 +71,9 @@ ptrdiff_t c_hash_set_check(const c_hash_set *const _hash_set,
                            const void *const _data);
 
 ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
-                              void (*const _func)(const void *const _data));
+                              void (*const _action)(const void *const _data));
 
 ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
-                           void (*const _del_func)(void *const _data));
+                           void (*const _del_data)(void *const _data));
 
 #endif

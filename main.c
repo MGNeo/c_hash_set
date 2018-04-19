@@ -6,13 +6,13 @@
 // Проверка возвращаемых значений не производится для упрощения.
 
 // Функция генерации хэша.
-size_t hash_func_s(const void *const _data)
+size_t hash_data_s(const void *const _data)
 {
     if (_data == NULL) return 0;
-    
+
     size_t hash = 0;
     const char *c = _data;
-    
+
     while (*c != 0)
     {
         hash += *(c++);
@@ -22,18 +22,18 @@ size_t hash_func_s(const void *const _data)
 }
 
 // Функция детального сравнения данных хэш-множества.
-size_t comp_func_s(const void *const _a,
-                   const void *const _b)
+size_t comp_data_s(const void *const _data_a,
+                   const void *const _data_b)
 {
-    if ( (_a == NULL) || (_b == NULL) )
+    if ( (_data_a == NULL) || (_data_b == NULL) )
     {
         return 0;
     }
 
-    const char *const a = (char*)_a;
-    const char *const b = (char*)_b;
+    const char *const data_a = (char*)_data_a;
+    const char *const data_b = (char*)_data_b;
 
-    if (strcmp(a, b) == 0)
+    if (strcmp(data_a, data_b) == 0)
     {
         return 1;
     }
@@ -42,21 +42,21 @@ size_t comp_func_s(const void *const _a,
 }
 
 // Функция печати данных хэш-множества.
-void func_print_s(const void *const _data)
+void print_data_s(const void *const _data)
 {
     if (_data == NULL) return;
-    
+
     const char *const data = (char*)_data;
     printf("%s\n", data);
-    
+
     return;
 }
 
 int main(int argc, char **argv)
 {
     // Создание хэш-множества.
-    c_hash_set *hash_set = c_hash_set_create(hash_func_s,
-                                             comp_func_s,
+    c_hash_set *hash_set = c_hash_set_create(hash_data_s,
+                                             comp_data_s,
                                              4,
                                              0.5f);
 
@@ -72,14 +72,14 @@ int main(int argc, char **argv)
     c_hash_set_insert(hash_set, string_d);
 
     // Вывод содержимого хэш-множества.
-    c_hash_set_for_each(hash_set, func_print_s);
+    c_hash_set_for_each(hash_set, print_data_s);
     printf("\n");
 
     // Удаление из хэш-множества одного элемента.
     c_hash_set_erase(hash_set, string_a, NULL);
 
     // Вывод содержимого хэш-множества.
-    c_hash_set_for_each(hash_set, func_print_s);
+    c_hash_set_for_each(hash_set, print_data_s);
     printf("\n");
 
     // Проверка, имеется ли в хэш-множестве заданные элементы.
