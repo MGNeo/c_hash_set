@@ -108,7 +108,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
         if (load_factor >= _hash_set->max_load_factor)
         {
             // Определим новое количество слотов.
-            size_t new_slots_count = _hash_set->slots_count * 1.75f;
+            size_t new_slots_count = (size_t)(_hash_set->slots_count * 1.75f);
             if (new_slots_count < _hash_set->slots_count)
             {
                 return -5;
