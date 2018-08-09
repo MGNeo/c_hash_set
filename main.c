@@ -1,5 +1,6 @@
 ﻿#include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
 
 #include "c_hash_set.h"
 

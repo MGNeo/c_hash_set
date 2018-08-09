@@ -15,10 +15,6 @@
 #ifndef C_HASH_SET_H
 #define C_HASH_SET_H
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <memory.h>
 #include <stddef.h>
 
 // Количество слотов, задаваемое хэш-множеству с нулем слотов при автоматическом расширении.
