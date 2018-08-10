@@ -20,29 +20,7 @@
 // Количество слотов, задаваемое хэш-множеству с нулем слотов при автоматическом расширении.
 #define C_HASH_SET_0 ( (size_t) 1024 )
 
-typedef struct s_c_hash_set_node
-{
-    struct s_c_hash_set_node *next_node;
-    size_t hash;
-    void *data;
-} c_hash_set_node;
-
-typedef struct s_c_hash_set
-{
-    // Функция, генерирующая хэш на основе данных.
-    size_t (*hash_data)(const void *const _data);
-    // Функция детального сравнения данных.
-    // В случае идентичности данных должна возвращать > 0, иначе 0.
-    size_t (*comp_data)(const void *const _data_a,
-                        const void *const _data_b);
-
-    size_t slots_count,
-           nodes_count;
-
-    float max_load_factor;
-
-    c_hash_set_node **slots;
-} c_hash_set;
+typedef struct s_c_hash_set c_hash_set;
 
 c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data),
                               size_t (*const _comp_data)(const void *const _data_a,
@@ -71,5 +49,11 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
 
 ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
                            void (*const _del_data)(void *const _data));
+
+size_t c_hash_set_slots_count(const c_hash_set *const _hash_set);
+
+size_t c_hash_set_nodes_count(const c_hash_set *const _hash_set);
+
+float c_hash_set_load_factor(const c_hash_set *const _hash_set);
 
 #endif

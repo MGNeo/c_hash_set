@@ -19,6 +19,32 @@
 
 #include "c_hash_set.h"
 
+typedef struct s_c_hash_set_node c_hash_set_node;
+
+struct s_c_hash_set_node
+{
+    struct s_c_hash_set_node *next_node;
+    size_t hash;
+    void *data;
+};
+
+struct s_c_hash_set
+{
+    // Функция, генерирующая хэш на основе данных.
+    size_t (*hash_data)(const void *const _data);
+    // Функция детального сравнения данных.
+    // В случае идентичности данных должна возвращать > 0, иначе 0.
+    size_t (*comp_data)(const void *const _data_a,
+                        const void *const _data_b);
+
+    size_t slots_count,
+           nodes_count;
+
+    float max_load_factor;
+
+    c_hash_set_node **slots;
+};
+
 // Создание пустого хэш-множества с заданным количеством слотов.
 // Позволяет создавать хэш-множество с нулевым кол-вом слотов.
 // В случае успеха возвращает указатель на созданное хэш-множество, иначе NULL.
@@ -451,4 +477,40 @@ ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
     _hash_set->nodes_count = 0;
 
     return 1;
+}
+
+// Возвращает количество слотов в хэш-множестве.
+// В случае ошибки возвращает 0.
+size_t c_hash_set_slots_count(const c_hash_set *const _hash_set)
+{
+    if (_hash_set == NULL)
+    {
+        return 0;
+    }
+
+    return _hash_set->slots_count;
+}
+
+// Возвращает количество узлов в хэш-множестве.
+// В случае ошибки возвращает 0.
+size_t c_hash_set_nodes_count(const c_hash_set *const _hash_set)
+{
+    if (_hash_set == NULL)
+    {
+        return 0;
+    }
+
+    return _hash_set->nodes_count;
+}
+
+// Возвращает коэф. максимальной загрузки.
+// В случае ошибки возвращает 0.0f.
+float c_hash_set_max_load_factor(const c_hash_set *const _hash_set)
+{
+    if (_hash_set == NULL)
+    {
+        return 0.0f;
+    }
+
+    return _hash_set->max_load_factor;
 }
