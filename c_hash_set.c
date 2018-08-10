@@ -186,7 +186,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     c_hash_set_node *const new_node = (c_hash_set_node*)malloc(sizeof(c_hash_set_node));
     if (new_node == NULL)
     {
-        return -9;
+        return -8;
     }
 
     // Заполним узел и вставим в нужный слот.
