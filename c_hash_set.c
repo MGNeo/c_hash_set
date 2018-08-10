@@ -19,6 +19,9 @@
 
 #include "c_hash_set.h"
 
+// Количество слотов, задаваемое хэш-множеству с нулем слотов при автоматическом расширении.
+#define C_HASH_SET_0 ( (size_t) 1024 )
+
 typedef struct s_c_hash_set_node c_hash_set_node;
 
 struct s_c_hash_set_node
