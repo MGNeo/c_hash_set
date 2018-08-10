@@ -65,8 +65,8 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data
 {
     if (_hash_data == NULL) return NULL;
     if (_comp_data == NULL) return NULL;
-    if ( (_max_load_factor < C_HASH_SET_MLF_MIN) ||
-         (_max_load_factor > C_HASH_SET_MLF_MAX) )
+    if ( (_max_load_factor <= C_HASH_SET_MLF_MIN) ||
+         (_max_load_factor >= C_HASH_SET_MLF_MAX) )
     {
         return NULL;
     }
@@ -136,7 +136,16 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     if (_hash_set == NULL) return -1;
     if (_data == NULL) return -2;
 
-    // Первым делом контролируем процесс увеличения количества слотов.
+    // Проверим, имеются ли в хэш-множестве заданные данные.
+    const ptrdiff_t r_code = c_hash_set_check(_hash_set, _data);
+
+    // Ошибка.
+    if (r_code < 0) return -3;
+
+    // Данные уже имеются.
+    if (r_code > 0) return 0;
+
+    // Контролируем процесс увеличения количества слотов.
 
     // Если слотов нет вообще.
     if (_hash_set->slots_count == 0)
@@ -170,14 +179,6 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
             }
         }
     }
-    // Проверим, имеются ли в хэш-множестве заданные данные.
-    ptrdiff_t r_code = c_hash_set_check(_hash_set, _data);
-
-    // Ошибка.
-    if (r_code < 0) return -8;
-
-    // Данные уже имеются.
-    if (r_code > 0) return 0;
 
     // Вставляем данные в хэш-множество.
 
@@ -516,7 +517,7 @@ size_t c_hash_set_nodes_count(const c_hash_set *const _hash_set)
     return _hash_set->nodes_count;
 }
 
-// Возвращает коэф. максимальной загрузки хэш-множества.
+// Возвращает коэф. максимальной загрузки.
 // В случае ошибки возвращает 0.0f.
 float c_hash_set_max_load_factor(const c_hash_set *const _hash_set)
 {
