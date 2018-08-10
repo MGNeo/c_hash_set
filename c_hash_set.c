@@ -516,7 +516,7 @@ size_t c_hash_set_nodes_count(const c_hash_set *const _hash_set)
     return _hash_set->nodes_count;
 }
 
-// Возвращает коэф. максимальной загрузки.
+// Возвращает коэф. максимальной загрузки хэш-множества.
 // В случае ошибки возвращает 0.0f.
 float c_hash_set_max_load_factor(const c_hash_set *const _hash_set)
 {
