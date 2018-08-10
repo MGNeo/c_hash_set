@@ -22,6 +22,12 @@
 // Количество слотов, задаваемое хэш-множеству с нулем слотов при автоматическом расширении.
 #define C_HASH_SET_0 ( (size_t) 1024 )
 
+// Минимально допустимое значение для max_load_factor.
+#define C_HASH_SET_MLF_MIN ( (float) 0.01f )
+
+// Максимально допустимое значение для max_load_factor.
+#define C_HASH_SET_MLF_MAX ( (float) 1.f )
+
 typedef struct s_c_hash_set_node c_hash_set_node;
 
 struct s_c_hash_set_node
@@ -59,7 +65,11 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data
 {
     if (_hash_data == NULL) return NULL;
     if (_comp_data == NULL) return NULL;
-    if (_max_load_factor <= 0.0f) return NULL;
+    if ( (_max_load_factor <= C_HASH_SET_MLF_MIN) ||
+         (_max_load_factor >= C_HASH_SET_MLF_MAX) )
+    {
+        return NULL;
+    }
 
     c_hash_set_node **new_slots = NULL;
 
