@@ -65,8 +65,8 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data
 {
     if (_hash_data == NULL) return NULL;
     if (_comp_data == NULL) return NULL;
-    if ( (_max_load_factor <= C_HASH_SET_MLF_MIN) ||
-         (_max_load_factor >= C_HASH_SET_MLF_MAX) )
+    if ( (_max_load_factor < C_HASH_SET_MLF_MIN) ||
+         (_max_load_factor > C_HASH_SET_MLF_MAX) )
     {
         return NULL;
     }
