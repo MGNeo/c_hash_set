@@ -441,52 +441,47 @@ ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
 
     size_t count = _hash_set->nodes_count;
 
+    // Макросы дублирования кода для изключения проверок из циклов.
+
+    // Открытие циклов.
+    #define C_HASH_SET_CLEAR_BEGIN\
+    for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)\
+    {\
+        if (_hash_set->slots[s] != NULL)\
+        {\
+            c_hash_set_node *select_node = _hash_set->slots[s],\
+                            *delete_node;\
+            while (select_node != NULL)\
+            {\
+                delete_node = select_node;\
+                select_node = select_node->next_node;
+
+    // Закрытие циклов.
+    #define C_HASH_SET_CLEAR_END\
+                free(delete_node);\
+                    --count;\
+                }\
+                _hash_set->slots[s] = NULL;\
+            }\
+        }
+
+    // Функция удаления данных задана.
     if (_del_data != NULL)
     {
-        for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
-        {
-            if (_hash_set->slots[s] != NULL)
-            {
-                c_hash_set_node *select_node = _hash_set->slots[s],
-                                *delete_node;
-                while (select_node != NULL)
-                {
-                    delete_node = select_node;
-                    select_node = select_node->next_node;
+        C_HASH_SET_CLEAR_BEGIN
 
-                    _del_data( delete_node->data );
+        _del_data( delete_node->data );
 
-                    free(delete_node);
-
-                    --count;
-                }
-
-                _hash_set->slots[s] = NULL;
-            }
-        }
+        C_HASH_SET_CLEAR_END
     } else {
-        // Дублирование кода, для того, чтобы на каждом узле не проверять, задана ли
-        // функция удаления данных узла.
-        for (size_t s = 0; (s < _hash_set->slots_count)&&(count > 0); ++s)
-        {
-            if (_hash_set->slots[s] != NULL)
-            {
-                c_hash_set_node *select_node = _hash_set->slots[s],
-                                *delete_node;
-                while (select_node != NULL)
-                {
-                    delete_node = select_node;
-                    select_node = select_node->next_node;
+        // Функция удаления данных не задана.
+        C_HASH_SET_CLEAR_BEGIN
 
-                    free(delete_node);
-
-                    --count;
-                }
-
-                _hash_set->slots[s] = NULL;
-            }
-        }
+        C_HASH_SET_CLEAR_END
     }
+
+    #undef C_HASH_SET_CLEAR_BEGIN
+    #undef C_HASH_SET_CLEAR_END
 
     _hash_set->nodes_count = 0;
 
