@@ -83,7 +83,7 @@ int main(int argc, char **argv)
     c_hash_set_for_each(hash_set, print_data_s);
     printf("\n");
 
-    // Проверка, имеется ли в хэш-множестве заданные элементы.
+    // Проверка, имеются ли в хэш-множестве заданные элементы.
     ptrdiff_t r_code;
     r_code = c_hash_set_check(hash_set, string_a);
     printf("string_a[%s]: %Iu\n", string_a, r_code);
