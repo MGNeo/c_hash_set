@@ -502,7 +502,7 @@ size_t c_hash_set_slots_count(const c_hash_set *const _hash_set)
 
 // Возвращает количество узлов в хэш-множестве.
 // В случае ошибки возвращает 0.
-size_t c_hash_set_nodes_count(const c_hash_set *const _hash_set)
+size_t c_hash_set_count(const c_hash_set *const _hash_set)
 {
     if (_hash_set == NULL)
     {

@@ -49,7 +49,7 @@ ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
 
 size_t c_hash_set_slots_count(const c_hash_set *const _hash_set);
 
-size_t c_hash_set_nodes_count(const c_hash_set *const _hash_set);
+size_t c_hash_set_count(const c_hash_set *const _hash_set);
 
 float c_hash_set_max_load_factor(const c_hash_set *const _hash_set);
 

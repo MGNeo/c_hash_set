@@ -94,6 +94,10 @@ int main(int argc, char **argv)
     r_code = c_hash_set_check(hash_set, string_d);
     printf("string_d[%s]: %Iu\n", string_d, r_code);
 
+    // Вывод количества элементов в хэш-множестве.
+    printf("\ncount: %Iu\n", c_hash_set_count(hash_set));
+
+    // Удаление хэш-множества.
     c_hash_set_delete(hash_set, NULL);
 
     getchar();
