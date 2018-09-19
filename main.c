@@ -4,14 +4,16 @@
 
 #include "c_hash_set.h"
 
-// Проверка возвращаемых значений не производится для упрощения.
-
-// Функция генерации хэша.
+// Функция генерации хэша по элементу-строке.
 size_t hash_data_s(const void *const _data)
 {
-    if (_data == NULL) return 0;
+    if (_data == NULL)
+    {
+        return 0;
+    }
 
     size_t hash = 0;
+
     const char *c = _data;
 
     while (*c != 0)
@@ -22,7 +24,7 @@ size_t hash_data_s(const void *const _data)
     return hash;
 }
 
-// Функция детального сравнения данных хэш-множества.
+// Функция детального сравнения элементов-строк хэш-множества.
 size_t comp_data_s(const void *const _data_a,
                    const void *const _data_b)
 {
@@ -42,65 +44,113 @@ size_t comp_data_s(const void *const _data_a,
     return 0;
 }
 
-// Функция печати данных хэш-множества.
+// Функция печати элемента-строки.
 void print_data_s(const void *const _data)
 {
-    if (_data == NULL) return;
+    if (_data == NULL)
+    {
+        return;
+    }
 
     const char *const data = (char*)_data;
-    printf("%s\n", data);
 
-    return;
+    printf("%s\n", data);
 }
 
 int main(int argc, char **argv)
 {
-    // Создание хэш-множества.
-    c_hash_set *hash_set = c_hash_set_create(hash_data_s,
-                                             comp_data_s,
-                                             4,
-                                             0.5f);
+    size_t error;
+    c_hash_set *hash_set;
 
-    // Вставка в хэш-множество нескольких строк.
-    const char *const string_a = "Hello";
-    const char *const string_b = "War";
-    const char *const string_c = "Blue";
-    const char *const string_d = "Zoo";
+    // Пытаемся создать хэш-множество.
+    hash_set = c_hash_set_create(hash_data_s, comp_data_s, 10, 0.5f, &error);
+    // Если не удалось создать хэш-множество, покажем ошибку.
+    if (hash_set == NULL)
+    {
+        printf("create error: %Iu\n", error);
+        printf("Program end.\n");
+        getchar();
+        return -1;
+    }
 
-    c_hash_set_insert(hash_set, string_a);
-    c_hash_set_insert(hash_set, string_b);
-    c_hash_set_insert(hash_set, string_c);
-    c_hash_set_insert(hash_set, string_d);
+    // Вставим в хэш-множество несколько строк.
+    const char *const string_1 = "War";
+    const char *const string_2 = "Underworld";
+    const char *const string_3 = "Pain";
+    {
+        const ptrdiff_t r_code = c_hash_set_insert(hash_set, string_1);
+        // Покажем результат операции.
+        printf("insert[%s]: %Id\n", string_1, r_code);
+    }
+    {
+        const ptrdiff_t r_code = c_hash_set_insert(hash_set, string_2);
+        // Покажем результат операции.
+        printf("insert[%s]: %Id\n", string_2, r_code);
+    }
+    {
+        const ptrdiff_t r_code = c_hash_set_insert(hash_set, string_3);
+        // Покажем результат операции.
+        printf("insert[%s]: %Id\n", string_3, r_code);
+    }
+    {
+        const ptrdiff_t r_code = c_hash_set_insert(hash_set, string_1);
+        // Покажем результат операции.
+        printf("insert[%s]: %Id\n", string_1, r_code);
+    }
 
-    // Вывод содержимого хэш-множества.
-    c_hash_set_for_each(hash_set, print_data_s);
-    printf("\n");
+    // При помощи обхода хэш-множества выведем содержимое каждого элемента.
+    {
+        const ptrdiff_t r_code = c_hash_set_for_each(hash_set, print_data_s);
+        // Если возникла ошибка, покажем ее.
+        if (r_code < 0)
+        {
+            printf("for each error, r_code: %Id\n", r_code);
+            printf("Program end.\n");
+            getchar();
+            return -2;
+        }
+    }
 
-    // Удаление из хэш-множества одного элемента.
-    c_hash_set_erase(hash_set, string_a, NULL);
+    // Удалим из хэш-множества один элемент.
+    {
+        const ptrdiff_t r_code = c_hash_set_erase(hash_set, string_1, NULL);
+        // Покажем результат операции.
+        printf("erase[%s]: %Id\n", string_1, r_code);
+    }
 
-    // Вывод содержимого хэш-множества.
-    c_hash_set_for_each(hash_set, print_data_s);
-    printf("\n");
+    // Попытаемся удалить тот же элемент еще раз.
+    {
+        const ptrdiff_t r_code = c_hash_set_erase(hash_set, string_1, NULL);
+        // Покажем результат операции.
+        printf("erase[%s]: %Id\n", string_1, r_code);
+    }
 
-    // Проверка, имеются ли в хэш-множестве заданные элементы.
-    ptrdiff_t r_code;
-    r_code = c_hash_set_check(hash_set, string_a);
-    printf("string_a[%s]: %Iu\n", string_a, r_code);
-    r_code = c_hash_set_check(hash_set, string_b);
-    printf("string_b[%s]: %Iu\n", string_b, r_code);
-    r_code = c_hash_set_check(hash_set, string_c);
-    printf("string_c[%s]: %Iu\n", string_c, r_code);
-    r_code = c_hash_set_check(hash_set, string_d);
-    printf("string_d[%s]: %Iu\n", string_d, r_code);
+    // При помощи обхода хэш-множества выведем содержимое каждого элемента.
+    {
+        const ptrdiff_t r_code = c_hash_set_for_each(hash_set, print_data_s);
+        // Если возникла ошибка, покажем ее.
+        if (r_code < 0)
+        {
+            printf("for each error, r_code: %Id\n", r_code);
+            printf("Program end.\n");
+            getchar();
+            return -3;
+        }
+    }
 
-    // Вывод количества элементов в хэш-множестве.
-    printf("\ncount: %Iu\n", c_hash_set_count(hash_set));
+    // Удалим хэш-множество.
+    {
+        const ptrdiff_t r_code = c_hash_set_delete(hash_set, NULL);
+        // Если произошла ошибка, покажем это.
+        if (r_code < 0)
+        {
+            printf("delete error, r_code: %Id\n", r_code);
+            printf("Program end.\n");
+            getchar();
+            return -4;
+        }
+    }
 
-    // Удаление хэш-множества.
-    c_hash_set_delete(hash_set, NULL);
-
-    getchar();
     return 0;
 }
 

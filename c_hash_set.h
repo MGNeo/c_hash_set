@@ -23,7 +23,8 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data
                               size_t (*const _comp_data)(const void *const _data_a,
                                                          const void *const _data_b),
                               const size_t _slots_count,
-                              const float _max_load_factor);
+                              const float _max_load_factor,
+                              size_t *const _error);
 
 ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                             void (*const _del_data)(void *const _data));
@@ -47,9 +48,11 @@ ptrdiff_t c_hash_set_for_each(const c_hash_set *const _hash_set,
 ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
                            void (*const _del_data)(void *const _data));
 
-size_t c_hash_set_slots_count(const c_hash_set *const _hash_set);
+size_t c_hash_set_slots_count(const c_hash_set *const _hash_set,
+                              size_t *const _error);
 
-size_t c_hash_set_count(const c_hash_set *const _hash_set);
+size_t c_hash_set_count(const c_hash_set *const _hash_set,
+                        size_t *const _error);
 
 float c_hash_set_max_load_factor(const c_hash_set *const _hash_set);
 

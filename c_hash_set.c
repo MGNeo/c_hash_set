@@ -54,20 +54,41 @@ struct s_c_hash_set
     c_hash_set_node **slots;
 };
 
+// Если расположение задано, в него помещается код.
+static void error_set(size_t *const _error,
+                      const size_t _code)
+{
+    if (_error != NULL)
+    {
+        *_error = _code;
+    }
+}
+
 // Создание пустого хэш-множества с заданным количеством слотов.
 // Позволяет создавать хэш-множество с нулевым кол-вом слотов.
-// В случае успеха возвращает указатель на созданное хэш-множество, иначе NULL.
+// В случае ошибки возвращает NULL, и если _error != NULL, в заданное расположение помещается
+// код причины ошибки (> 0).
 c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data),
                               size_t (*const _comp_data)(const void *const _data_a,
                                                               const void *const _data_b),
                               const size_t _slots_count,
-                              const float _max_load_factor)
+                              const float _max_load_factor,
+                              size_t *const _error)
 {
-    if (_hash_data == NULL) return NULL;
-    if (_comp_data == NULL) return NULL;
+    if (_hash_data == NULL)
+    {
+        error_set(_error, 1);
+        return NULL;
+    }
+    if (_comp_data == NULL)
+    {
+        error_set(_error, 2);
+        return NULL;
+    }
     if ( (_max_load_factor < C_HASH_SET_MLF_MIN) ||
          (_max_load_factor > C_HASH_SET_MLF_MAX) )
     {
+        error_set(_error, 3);
         return NULL;
     }
 
@@ -79,19 +100,25 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data
         if ( (new_slots_size == 0) ||
              (new_slots_size / _slots_count != sizeof(c_hash_set_node*)) )
         {
+            error_set(_error, 4);
             return NULL;
         }
 
-        new_slots = (c_hash_set_node**)malloc(new_slots_size);
-        if (new_slots == NULL) return NULL;
+        new_slots = malloc(new_slots_size);
+        if (new_slots == NULL)
+        {
+            error_set(_error, 5);
+            return NULL;
+        }
 
         memset(new_slots, 0, new_slots_size);
     }
 
-    c_hash_set *const new_hash_set = (c_hash_set*)malloc(sizeof(c_hash_set));
+    c_hash_set *const new_hash_set = malloc(sizeof(c_hash_set));
     if (new_hash_set == NULL)
     {
         free(new_slots);
+        error_set(_error, 6);
         return NULL;
     }
 
@@ -109,7 +136,8 @@ c_hash_set *c_hash_set_create(size_t (*const _hash_data)(const void *const _data
 }
 
 // Удаление хэш-множества.
-// В случае успеха возвращает > 0, иначе < 0.
+// В случае успеха возвращает > 0.
+// В случае ошибки возвращает < 0.
 ptrdiff_t c_hash_set_delete(c_hash_set *const _hash_set,
                             void (*const _del_data)(void *const _data))
 {
@@ -183,7 +211,7 @@ ptrdiff_t c_hash_set_insert(c_hash_set *const _hash_set,
     // Вставляем данные в хэш-множество.
 
     // Попытаемся выделить память под узел.
-    c_hash_set_node *const new_node = (c_hash_set_node*)malloc(sizeof(c_hash_set_node));
+    c_hash_set_node *const new_node = malloc(sizeof(c_hash_set_node));
     if (new_node == NULL)
     {
         return -8;
@@ -310,7 +338,7 @@ ptrdiff_t c_hash_set_resize(c_hash_set *const _hash_set,
         }
 
         // Попытаемся выделить память под новые слоты.
-        c_hash_set_node **const new_slots = (c_hash_set_node**)malloc(new_slots_size);
+        c_hash_set_node **const new_slots = malloc(new_slots_size);
         if (new_slots == NULL)
         {
             return -4;
@@ -489,11 +517,16 @@ ptrdiff_t c_hash_set_clear(c_hash_set *const _hash_set,
 }
 
 // Возвращает количество слотов в хэш-множестве.
-// В случае ошибки возвращает 0.
-size_t c_hash_set_slots_count(const c_hash_set *const _hash_set)
+// В случае ошибки возвращает 0, и если _error != NULL, в заданное расположение помещается
+// код причины ошибки (> 0).
+// Так как функция может возвращать 0 и в случае успеха, и в случае ошибки, для детектирования
+//ошибки перед вызовом функции необходимо поместить 0 в заданное расположение ошибки.
+size_t c_hash_set_slots_count(const c_hash_set *const _hash_set,
+                              size_t *const _error)
 {
     if (_hash_set == NULL)
     {
+        error_set(_error, 1);
         return 0;
     }
 
@@ -501,11 +534,16 @@ size_t c_hash_set_slots_count(const c_hash_set *const _hash_set)
 }
 
 // Возвращает количество узлов в хэш-множестве.
-// В случае ошибки возвращает 0.
-size_t c_hash_set_count(const c_hash_set *const _hash_set)
+// В случае ошибки возвращает 0, и если _error != NULL, в заданное расположение ошибки
+// помещается код причины ошибки (> 0).
+// Так как функция может возвращать 0 и в случае успеха, и в случае ошибки, для детектирования
+// ошибки перед вызовом функции необходимо поместить 0 в заданное расположение ошибки.
+size_t c_hash_set_count(const c_hash_set *const _hash_set,
+                        size_t *const _error)
 {
     if (_hash_set == NULL)
     {
+        error_set(_error, 1);
         return 0;
     }
 
